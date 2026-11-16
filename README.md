@@ -175,7 +175,9 @@ rubric is too easy, or the file carries nothing the agent needs.
 One caveat worth stating because it nearly shipped: the first attempt printed
 **empty** answers for five cells, and the harness scored that silence as "wrong"
 — a perfect `6/0` produced by a broken engine rather than a load-bearing file.
-`run_engine()` now aborts on empty output, and `selftest.py` asserts it.
+`run_engine()` now aborts on empty output, and `selftest.py` asserts it. The full
+case, including why raising `max_tokens` does not fix it, is anti-pattern
+[#10](references/anti-patterns.md).
 
 On Pi you get the switch for free; on any other host `ab_context.py` injects the
 files itself, which measures the same thing with one less moving part:
@@ -251,7 +253,7 @@ Then ask your agent: *"set up my memory system"* and it will probe, scaffold, an
 
 - [`references/platform-matrix.md`](references/platform-matrix.md) — exact paths and capabilities per agent
 - [`references/backends.md`](references/backends.md) — filesystem / git / MCP / MemOS in detail
-- [`references/anti-patterns.md`](references/anti-patterns.md) — nine ways these systems fail
+- [`references/anti-patterns.md`](references/anti-patterns.md) — ten ways these systems fail
 
 ## License
 

@@ -1,6 +1,6 @@
 # Anti-patterns
 
-Nine ways these systems fail. Each one looks fine from the outside for about a week.
+Ten ways these systems fail. Each one looks fine from the outside for about a week.
 
 ## 1. Mixing the three layers
 
@@ -73,3 +73,41 @@ and a much better product.
 **Why it fails:** the discipline file is injected into every session, sent to the
 model provider, and often committed to a repo.
 **Fix:** no secrets in any layer. Reference an environment variable name only.
+
+## 10. Scoring silence as a wrong answer
+
+**Symptom:** the A/B table reads `6/6` with the discipline file and `0/6` without
+it. Perfect separation, first try.
+
+**Why it fails:** that score came from an engine that printed nothing. The model
+was a reasoning model; it spent its entire token budget on chain-of-thought and
+returned `finish_reason: length` with an empty `content`. A harness that maps
+`""` to `not correct` will report the same flawless gap whether the context file
+is doing work or the model is simply broken — and it always errs in the
+flattering direction. This is the worst kind of false green, because a 6/0 gap is
+exactly what an honest result looks like.
+
+**Fix:** three things, in this order.
+
+1. **Abort on empty output**, do not score it. An answer of zero bytes is an
+   infrastructure failure, not an opinion. `ab_context.py` exits non-zero and
+   `selftest.py` asserts it with a command that always prints nothing.
+2. **Assert the guard exists.** A guard that no test covers gets deleted by the
+   next person tidying up.
+3. **Print the answer next to the verdict.** A table of `correct` / `not
+   answered` with no quotes cannot be checked by a reader, so a broken run and a
+   good run look identical. Every cell should carry the sentence it graded.
+
+Raising `max_tokens` is not the fix. It buys a longer chain, not a bound on one —
+the same run exhausted 4,000 tokens on a two-sentence question. Turn the thinking
+phase off explicitly if the provider supports it, but fix the harness first: the
+next model will have a different flavour of the same failure.
+
+**A postscript worth keeping.** Once the run was fixed, the no-context column did
+not merely abstain. Four questions got `not available`; two got a confident
+invention — `ex-` for the archive prefix, `compound title` for a note that should
+have been split. The discipline layer's real value turned out to be narrower and
+more interesting than "it knows the answers": it stops the model from **inventing
+conventions** it was never given. Say that, and do not claim the failures that
+did not happen — the trap row abstained in both columns, so it proves nothing and
+the README says so.
