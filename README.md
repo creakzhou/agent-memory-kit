@@ -100,7 +100,7 @@ pipeline both ways: clean input must pass, each injected defect must fail the
 matching check, and the failure must clear once the defect is removed.
 
 ```bash
-python3 scripts/selftest.py      # 28 assertions, offline, no dependencies
+python3 scripts/selftest.py      # 29 assertions, offline, no dependencies
 ```
 
 | Assertion | Why it is there |
@@ -112,6 +112,7 @@ python3 scripts/selftest.py      # 28 assertions, offline, no dependencies
 | A one-note vault is refused, not scored | `false_green` must decline to grade what it cannot separate |
 | Pi is detected from `~/.pi/agent` and its quirks are reported | platform table rows are claims; this keeps them honest |
 | No absolute home paths in tracked files | this repo leaked local paths once already |
+| `SKILL.md` carries the fields the marketplace rejects without | the package is refused at upload, weeks after the fact |
 | The A/B harness reports a gap for a context-following agent | otherwise the table it writes is decoration |
 | The same harness exits 3 when the agent ignores context | a tool that cannot say "no difference" only produces false greens |
 | An engine that prints nothing aborts the run | silence was scored as a wrong answer once, which fabricates the gap |
@@ -248,6 +249,21 @@ Then ask your agent: *"set up my memory system"* and it will probe, scaffold, an
 - Not a note-taking app
 - Not a promise that your agent will remember automatically
 - Not a place to store secrets — the discipline file is injected into every session
+
+## Publishing to the skill marketplace
+
+The upload package is not this repository. The repository carries a demo vault
+nested four levels deep and a CI workflow; the marketplace accepts one top-level
+folder with at most one level of subfolder inside it, under 3 MB, with five
+extra frontmatter fields. `scripts/package_skill.py` stages an allowlist, checks
+all of that, runs the packaged copy's own tests, and only then writes the zip:
+
+```bash
+python3 scripts/package_skill.py           # dist/agent-memory-kit.zip, 58 KB
+python3 scripts/package_skill.py --check   # rules only, no archive (CI runs this)
+```
+
+Listing copy and the release checklist are in [`MARKETPLACE.md`](MARKETPLACE.md).
 
 ## More
 

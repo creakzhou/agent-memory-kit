@@ -55,6 +55,14 @@ jobs:
       - name: Probe runs on this platform
         run: python scripts/probe.py
 
+      # The marketplace rejects a package for three reasons, all of them at
+      # upload time: a missing frontmatter field, a subfolder nested more than
+      # one level inside the top folder, an archive over 3 MB. Checking that
+      # here means the release fails in CI instead of three weeks later in a
+      # review queue.
+      - name: The upload package satisfies the marketplace rules
+        run: python scripts/package_skill.py --check
+
       # Catches the failure this repo already made once: a test that drops a temp
       # file into the working tree, or a sanitised path that crept back in.
       - name: Tests must not write into the repository

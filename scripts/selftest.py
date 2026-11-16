@@ -304,10 +304,20 @@ def test_hygiene() -> None:
     case("no probe output committed", not stray, ", ".join(stray))
 
     skill = REPO / "SKILL.md"
-    head = skill.read_text(encoding="utf-8")[:400] if skill.is_file() else ""
-    case("SKILL.md has frontmatter with a name and description",
-         head.startswith("---") and "name:" in head and "description:" in head,
-         head[:200])
+    text = skill.read_text(encoding="utf-8") if skill.is_file() else ""
+    # Parse to the closing --- rather than taking the first N characters: a
+    # character window silently stops covering the field it looks for the moment
+    # the frontmatter grows, and reports a missing key that is plainly there.
+    block, keys = "", set()
+    if text.startswith("---"):
+        end = text.find("\n---", 3)
+        block = text[:end] if end != -1 else text
+        keys = set(re.findall(r"(?m)^([A-Za-z_][\w-]*):", block))
+    case("SKILL.md frontmatter declares a name and a description",
+         {"name", "description"} <= keys, sorted(keys))
+    case("SKILL.md carries the five fields the marketplace refuses without",
+         {"version", "display_name", "display_name_en",
+          "description_zh", "description_en"} <= keys, sorted(keys))
 
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,22 @@
 ---
 name: agent-memory-kit
+display_name: "跨 Agent 记忆系统搭建与体检"
+display_name_en: "Cross-Agent Memory Kit"
+version: "1.0.0"
+description_zh: >-
+  为用户搭一套「会话关掉、换个 Agent、换台电脑都还在」的三层记忆系统（身份 / 纪律 / 事实），
+  并且用脚本证明它真的生效，而不是假设它生效。适用场景：希望 AI 跨会话记住事情、要建记忆库或
+  记忆文件夹、想让两个 Agent 共用同一份记忆、或想体检已有记忆系统是否存在失效指针、注入预算溢出、
+  规则跨层重复、召回假绿。附带四个可离线运行的检查器与一组 A/B 对照实验脚本。不适用：存密钥、
+  搭向量数据库、做笔记软件的界面。
+description_en: >-
+  Scaffold and audit a three-layer, cross-agent memory system (identity / discipline /
+  facts) on the user's own machine. Use when the user wants their agent to remember
+  across sessions, asks to set up a memory vault or memory folder, wants to share memory
+  between two agents, or wants an existing memory setup audited for dangling pointers,
+  budget overflow, duplicated layers, or false-green recall. Ships four offline checkers
+  and an A/B harness that measures whether the rules actually change behaviour. Not for
+  storing secrets, not for building a vector database, and not for note-taking UI work.
 description: Scaffold and audit a three-layer, cross-agent memory system (identity / discipline / facts) on the user's own machine. Use when the user wants their agent to remember across sessions, asks to set up a memory vault or memory folder, wants to share memory between two agents, or wants an existing memory setup audited for dangling pointers, budget overflow, duplicated layers, or false-green recall. Not for storing secrets, not for building a vector database, and not for note-taking UI work.
 ---
 

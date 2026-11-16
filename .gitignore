@@ -25,3 +25,6 @@ Thumbs.db
 # Notes that should never be published
 *.local.md
 secrets*
+
+# Build output: dist/agent-memory-kit.zip is reproducible, do not commit it
+dist/
