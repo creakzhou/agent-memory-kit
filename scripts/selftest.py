@@ -319,6 +319,15 @@ def test_hygiene() -> None:
          {"version", "display_name", "display_name_en",
           "description_zh", "description_en"} <= keys, sorted(keys))
 
+    # The marketplace rejects a subfolder nested more than one level inside the
+    # top folder, and it does that after upload, not before. This repository
+    # keeps a demo vault four levels deep, so "just zip the repo" fails — and
+    # failed once already, on Windows only, where str(Path) is backslash
+    # separated and a string-prefix exclusion matched nothing.
+    rc, out = run("package_skill.py", "--check")
+    case("the upload package stays inside the marketplace limits",
+         rc == 0 and "PASS" in out, f"exit {rc}\n{out[-400:]}")
+
 
 # ---------------------------------------------------------------------------
 # Main

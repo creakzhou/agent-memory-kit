@@ -40,8 +40,11 @@ ROOT = Path(__file__).resolve().parent.parent
 # Allowlist. A top-level file that is not named here does not ship.
 PACKAGE_FILES = ["SKILL.md"]
 PACKAGE_DIRS = ["scripts", "references", "templates", "examples"]
-# Dropped from the package even though the parent directory ships.
-EXCLUDE = ["examples/demo-vault"]
+# Dropped from the package even though the parent directory ships. Compared as
+# path *parts*, not as a string prefix: on Windows str(Path) uses backslashes, so
+# a "examples/demo-vault" startswith() check silently matches nothing there and
+# the depth rule then fails on the very folder it was meant to drop.
+EXCLUDE_PREFIXES = [("examples", "demo-vault")]
 
 # Marketplace limits.
 MAX_BYTES = 3 * 1024 * 1024
@@ -129,7 +132,7 @@ def collect() -> list[Path]:
             if not p.is_file():
                 continue
             rel = p.relative_to(ROOT)
-            if any(str(rel).startswith(x) for x in EXCLUDE):
+            if any(rel.parts[:len(ex)] == ex for ex in EXCLUDE_PREFIXES):
                 continue
             if "__pycache__" in rel.parts or rel.suffix == ".pyc":
                 continue
@@ -142,7 +145,7 @@ def check_tree(files: list[Path]) -> list[str]:
     for rel in files:
         if len(rel.parts) > MAX_DEPTH:
             bad.append(f"too deep for the marketplace ({len(rel.parts)} levels, "
-                       f"max {MAX_DEPTH}): {rel}")
+                       f"max {MAX_DEPTH}): {rel.as_posix()}")
     return bad
 
 
@@ -189,7 +192,10 @@ def zip_tree(top: Path, out: Path) -> int:
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for p in sorted(top.rglob("*")):
             if p.is_file():
-                z.write(p, p.relative_to(top.parent))
+                # Explicit posix arcname: the archive format wants forward
+                # slashes, and the marketplace parser is not the place to find
+                # out whether zipfile normalised them for us.
+                z.write(p, p.relative_to(top.parent).as_posix())
     return out.stat().st_size
 
 

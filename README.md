@@ -100,7 +100,7 @@ pipeline both ways: clean input must pass, each injected defect must fail the
 matching check, and the failure must clear once the defect is removed.
 
 ```bash
-python3 scripts/selftest.py      # 29 assertions, offline, no dependencies
+python3 scripts/selftest.py      # 30 assertions, offline, no dependencies
 ```
 
 | Assertion | Why it is there |
@@ -113,6 +113,7 @@ python3 scripts/selftest.py      # 29 assertions, offline, no dependencies
 | Pi is detected from `~/.pi/agent` and its quirks are reported | platform table rows are claims; this keeps them honest |
 | No absolute home paths in tracked files | this repo leaked local paths once already |
 | `SKILL.md` carries the fields the marketplace rejects without | the package is refused at upload, weeks after the fact |
+| The upload package stays inside the marketplace limits | "zip the repo" fails: the demo vault is nested too deep, and the check broke on Windows only |
 | The A/B harness reports a gap for a context-following agent | otherwise the table it writes is decoration |
 | The same harness exits 3 when the agent ignores context | a tool that cannot say "no difference" only produces false greens |
 | An engine that prints nothing aborts the run | silence was scored as a wrong answer once, which fabricates the gap |
