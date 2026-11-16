@@ -1,0 +1,27 @@
+# Generated probe output contains absolute paths from your machine.
+env.probe.json
+*.probe.json
+
+# Scaffolded layers at the repo root are personal, not part of the tool.
+/memory.config.json
+/MEMORY.md
+/CLAUDE.md
+/AGENTS.md
+/GEMINI.md
+/.cursor/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Notes that should never be published
+*.local.md
+secrets*

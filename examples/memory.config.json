@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "platform": "workbuddy",
+  "vault": "./demo-vault",
+  "discipline_file": "./MEMORY.md",
+  "discipline_budget_chars": 3800,
+  "recall": {
+    "mode": "hook",
+    "hook_capable": true,
+    "note": "manual means the agent only recalls when told to, or when the discipline file forces it"
+  },
+  "backend": {
+    "kind": "mcp-or-filesystem",
+    "mcp_configured": true,
+    "options": [
+      "filesystem",
+      "mcp-filesystem",
+      "memos",
+      "git"
+    ]
+  }
+}
