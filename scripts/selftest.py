@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -247,16 +248,32 @@ def test_ab_context_contract(tmp: Path) -> None:
     table = root / "table.md"
     rc, out = run("ab_context.py", *ctx, "--engine", "stub-echo", "--markdown", table)
     body = table.read_text(encoding="utf-8") if table.is_file() else ""
-    rows = [ln for ln in body.splitlines() if ln.startswith("| ") and "---" not in ln]
+    # Cells now carry the agent's own words, which may contain "---" or a pipe.
+    # Count unescaped pipes so a quoted answer cannot fake a column.
+    rows = [ln for ln in body.splitlines()
+            if ln.startswith("| ") and not re.fullmatch(r"\|[\s\-:|]+\|", ln)]
     case("markdown output is a three-column table with one row per question",
-         rc == 0 and len(rows) == 7 and all(r.count("|") == 4 for r in rows),
+         rc == 0 and len(rows) == 7
+         and all(r.replace("\\|", "").count("|") == 4 for r in rows),
          f"rows={len(rows)}\n{body[:300]}")
     case("the table records no fabricated result word",
          "correct" in body and "not answered" in body, body[:300])
+    case("the table quotes what the agent actually answered",
+         body.count('"') >= 12, "expected a quote in every cell")
 
     rc, out = run("ab_context.py", "--discipline", discipline, "--engine", "stub-silent")
     case("without any use of the context, the harness reports NO GAP and exits 3",
          rc == 3 and "NO GAP" in out, f"exit {rc}\n{out[-400:]}")
+
+    # A real model hit this: a reasoning model spent its whole token budget on
+    # chain-of-thought and printed an empty answer. Scoring that as "wrong" would
+    # have produced a 6/0 table out of a broken engine — a false green of exactly
+    # the kind this repo audits for.
+    silent = f'"{sys.executable}" -c pass'
+    rc, out = run("ab_context.py", "--discipline", discipline,
+                  "--engine", "custom", "--cmd", silent)
+    case("an engine that prints nothing aborts the run instead of scoring silence",
+         rc != 0 and "empty output" in out, f"exit {rc}\n{out[-400:]}")
 
     rc, out = run("ab_context.py", "--discipline", discipline, "--engine", "pi", "--dry-run")
     case("dry-run prints the -nc switch instead of guessing it at runtime",

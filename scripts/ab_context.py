@@ -151,7 +151,7 @@ def make_prompt(question: str, context: str, with_context: bool) -> str:
     )
 
 
-def run_engine(engine: str, prompt: str, args, with_context: bool) -> str:
+def _engine_output(engine: str, prompt: str, args, with_context: bool) -> str:
     """Return the agent's answer. `stub-*` engines exist only for self-tests."""
     if engine == "stub-echo":
         # Plausible stand-in for "context injection works": it repeats what it was
@@ -196,6 +196,25 @@ def run_engine(engine: str, prompt: str, args, with_context: bool) -> str:
     if proc.returncode != 0:
         raise RuntimeError(f"agent failed ({proc.returncode}): {proc.stderr[:400]}")
     return proc.stdout
+
+
+def run_engine(engine: str, prompt: str, args, with_context: bool) -> str:
+    """Refuse to score silence.
+
+    An engine that exits 0 with nothing on stdout is broken or truncated, not
+    ignorant. Counting that as a miss manufactures exactly the gap this tool is
+    supposed to measure, so it aborts the run instead. A reasoning model that
+    spends its whole budget on chain-of-thought and returns an empty string hits
+    this path; so does a `--cmd` that swallows stdin.
+    """
+    out = _engine_output(engine, prompt, args, with_context)
+    if not out.strip():
+        raise RuntimeError(
+            f"engine '{engine}' returned empty output. A cell with no text cannot "
+            "be scored as a wrong answer — raise the model's token budget or fix "
+            "--cmd so it prints something."
+        )
+    return out
 
 
 def score(answer: str, item: dict) -> dict:
@@ -265,7 +284,10 @@ def main() -> int:
             answers = []
             for _ in range(max(1, args.repeat)):
                 prompt = make_prompt(item["q"], context, with_ctx)
-                ans = run_engine(args.engine, prompt, args, with_ctx)
+                try:
+                    ans = run_engine(args.engine, prompt, args, with_ctx)
+                except RuntimeError as exc:
+                    raise SystemExit(f"aborted on {item['id']}/{cond}: {exc}")
                 s = score(ans, item)
                 hits += 1 if s["hit"] else 0
                 traps += 1 if s["trap"] else 0
@@ -314,17 +336,32 @@ def main() -> int:
             print("         the agent needs. Do not report this as a win.")
 
     if args.markdown:
+        def quote(text: str, limit: int = 150) -> str:
+            """Keep the table readable without hiding what the agent said.
+
+            The quote is the evidence: a score alone is the thing this repo
+            refuses to trust. Pipes and newlines are neutralised so one answer
+            cannot break the table.
+            """
+            flat = " ".join((text or "").split()).replace("|", "\\|")
+            if not flat:
+                return "_empty_"
+            return flat if len(flat) <= limit else flat[:limit].rstrip() + "…"
+
         lines = [
             "| Question | With context file | With `-nc` |",
             "|---|---|---|",
         ]
         for r in rows:
-            cell = lambda c: ("correct" if r[c]["hit"] and not r[c]["trap"]
-                              else ("invented" if r[c]["trap"] else "not answered"))
+            def cell(c: str) -> str:
+                verdict = ("correct" if r[c]["hit"] and not r[c]["trap"]
+                           else ("invented" if r[c]["trap"] else "not answered"))
+                return f"{verdict} — \"{quote(r[c]['answer'])}\""
             lines.append(f"| {r['q']} | {cell('ctx')} | {cell('nc')} |")
         lines.append("")
         lines.append(f"`{ctx_hits}/{len(rows)}` vs `{nc_hits}/{len(rows)}` correct · "
-                     f"engine `{args.engine}`" + (f" · model `{args.model}`" if args.model else ""))
+                     f"{args.repeat} run(s) per cell · engine `{args.engine}`"
+                     + (f" · model `{args.model}`" if args.model else ""))
         Path(args.markdown).write_text("\n".join(lines) + "\n", encoding="utf-8")
         print(f"markdown -> {args.markdown}")
 
