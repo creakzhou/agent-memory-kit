@@ -23,8 +23,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 STRIP = re.compile(r"[^\w\u4e00-\u9fff]+", re.UNICODE)
@@ -180,10 +182,15 @@ def main() -> int:
     vault_text = []
     for p in sorted(vault.rglob("*.md"))[:400]:
         vault_text.append(p.read_text(encoding="utf-8", errors="ignore"))
-    tmp_vault = vault / ".layer-dup-tmp.md"
+
+    # Combine into one blob outside the vault: never write temp files into the
+    # user's notes directory, a crashed run would leave one behind.
     combined = "\n".join(vault_text)
+    fd, tmp_name = tempfile.mkstemp(suffix=".md", prefix="layer-dup-")
+    tmp_vault = Path(tmp_name)
     try:
-        tmp_vault.write_text(combined, encoding="utf-8")
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(combined)
         files = {
             "identity": identity,
             "discipline": args.discipline,

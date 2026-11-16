@@ -29,18 +29,21 @@ That property, not the file name, is what makes a layer automatic.
 - MCP servers live in `~/.claude.json` or a project `.mcp.json`.
 - Skills in `~/.claude/skills/<name>/SKILL.md`.
 
-Minimal recall hook shape (adapt, do not paste blindly — schemas change between
-versions):
+Minimal recall hook shape. This repo does **not** ship a recall script — the
+snippet shows where one plugs in. Writing it means: read the prompt, grep the
+vault index, print the top few notes to stdout.
 
 ```json
 {
   "hooks": {
     "UserPromptSubmit": [
-      { "hooks": [ { "type": "command", "command": "python3 ~/memory-vault/scripts/recall.py" } ] }
+      { "hooks": [ { "type": "command", "command": "python3 /path/to/your-recall-script.py" } ] }
     ]
   }
 }
 ```
+
+Schemas change between releases. Check the current hook docs before relying on it.
 
 ### Codex CLI
 
