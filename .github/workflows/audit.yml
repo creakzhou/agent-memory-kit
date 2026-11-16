@@ -27,14 +27,16 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python: ["3.11"]
         include:
+          # ubuntu-latest is Ubuntu 26.04, whose python-versions manifest starts
+          # at 3.10 — asking for 3.9 fails in setup-python, not in our code.
           - os: ubuntu-latest
-            python: "3.9"
+            python: "3.10"
           - os: ubuntu-latest
             python: "3.13"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
 

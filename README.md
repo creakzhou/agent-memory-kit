@@ -2,7 +2,7 @@
 
 **A scaffolder and linter for three-layer agent memory that survives session resets — and works across different agents.**
 
-<!-- Enable after publishing: ![audit](https://github.com/OWNER/REPO/actions/workflows/audit.yml/badge.svg) -->
+[![audit](https://github.com/creakzhou/agent-memory-kit/actions/workflows/audit.yml/badge.svg)](https://github.com/creakzhou/agent-memory-kit/actions/workflows/audit.yml)
 
 Most "agent memory" projects ship a database or an SDK. This one ships the boring parts that actually decide whether memory works: a folder layout, a budget, a pointer contract, and four checks that catch the ways a memory system silently lies to you.
 
@@ -116,7 +116,7 @@ python3 scripts/selftest.py      # 21 assertions, offline, no dependencies
 | The same harness exits 3 when the agent ignores context | a tool that cannot say "no difference" only produces false greens |
 
 `.github/workflows/audit.yml` runs that exact command on Linux, macOS and Windows
-across Python 3.9–3.13, then audits the example vault, then fails if any script
+across Python 3.10–3.13, then audits the example vault, then fails if any script
 left a file behind in the working tree.
 
 ## Does the discipline layer actually do anything?
