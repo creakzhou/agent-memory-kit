@@ -112,10 +112,69 @@ python3 scripts/selftest.py      # 21 assertions, offline, no dependencies
 | A one-note vault is refused, not scored | `false_green` must decline to grade what it cannot separate |
 | Pi is detected from `~/.pi/agent` and its quirks are reported | platform table rows are claims; this keeps them honest |
 | No absolute home paths in tracked files | this repo leaked local paths once already |
+| The A/B harness reports a gap for a context-following agent | otherwise the table it writes is decoration |
+| The same harness exits 3 when the agent ignores context | a tool that cannot say "no difference" only produces false greens |
 
 `.github/workflows/audit.yml` runs that exact command on Linux, macOS and Windows
 across Python 3.9–3.13, then audits the example vault, then fails if any script
 left a file behind in the working tree.
+
+## Does the discipline layer actually do anything?
+
+Every memory project assumes its context file helps. That is testable, and Pi
+hands you the switch: `-nc` / `--no-context-files` loads **no** `AGENTS.md` and
+**no** `CLAUDE.md`. Same binary, same model, same question — one condition has
+your rules in the prompt, the other has nothing.
+
+`scripts/ab_context.py` runs that comparison. Six questions, all of them
+unanswerable from general knowledge because they ask about conventions this
+scaffolder invented: what happens when the character budget overflows, which
+prefix holds dead work, how many notes you may read before admitting the index is
+wrong, whether an MCP server configured means memory is already in context.
+
+| Question | With context file | With `-nc` |
+|---|---|---|
+| What does the host do when the memory-rules budget is exceeded? | — | — |
+| Where do decisions with reasons get written, and may one be rewritten? | — | — |
+| How many notes may be read before concluding the index is wrong? | — | — |
+| Which prefix holds finished or dead work? | — | — |
+| A note seems to need two titles. What do you do? | — | — |
+| What storage does this memory system use? | — | — |
+
+**This table ships empty on purpose.** No model was reachable on the machine this
+was written on — no `pi` CLI, no local model, no API key — and filling it in from
+imagination is precisely the failure this repo exists to catch. Fill it with:
+
+```bash
+# Pi, working inside the vault (three context files, exactly what -nc removes)
+python3 scripts/ab_context.py \
+  --discipline ~/.pi/agent/AGENTS.md \
+  --extra ./AGENTS.md \
+  --index ./00-index.md \
+  --engine pi --model <model> \
+  --repeat 3 --markdown AB-RESULT.md
+
+# any other host: same comparison, the file is injected by the script instead
+python3 scripts/ab_context.py --discipline ./AGENTS.md --engine ollama --model qwen2.5:7b
+```
+
+Commit the generated `AB-RESULT.md` next to this README. A result is worth
+publishing only if it shows a gap; equal scores mean the file earns nothing.
+
+How to read the output:
+
+| Outcome | What it means | What to do |
+|---|---|---|
+| `ctx` answers, `-nc` says "not available" | the file is load-bearing | keep it, and keep it under budget |
+| Both answer correctly | your questions are answerable from priors — the rubric is too easy | ask about invented conventions, not general practice |
+| `-nc` invents a database or a directory that does not exist | the trap row fired | that is the strongest case for the file: it suppresses fabrication |
+| Exit code `3` | no gap found, the harness refuses to call it a win | delete the file or rewrite it around facts a model cannot guess |
+
+The harness itself is self-tested, because a measurement tool that cannot report
+"no difference" is just a generator of false greens:
+`stub-echo` (repeats the injected text) scores 6/6 and exits 0, `stub-silent`
+(generic answers) scores 0/6 and exits 3. Both are asserted in
+`scripts/selftest.py`, so CI fails if the harness ever stops discriminating.
 
 ## Memory backends
 

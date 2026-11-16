@@ -6,7 +6,10 @@
 ## What this is
 
 This vault is the **single source of truth** for facts. Not a scratchpad, not a
-transcript dump. If something is worth remembering, it belongs in a note here —
+transcript dump.
+
+It is plain markdown files in folders. No database, no embedding store, no index
+server. If a fact needs a service to be readable, it is in the wrong place. If something is worth remembering, it belongs in a note here —
 because this is the only place that survives a closed session.
 
 ## Structure

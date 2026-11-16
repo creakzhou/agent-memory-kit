@@ -100,6 +100,25 @@ Four checks, all must pass:
 Report raw numbers, not verdicts. "3 of 3 dangling links fixed, 2,412 / 3,610 chars,
 real 0.18 vs garbage 0.00" is a result. "All checks passed" is not.
 
+### Step 6 — Prove it (optional, on Pi it is one flag)
+
+Offer this, do not force it. `-nc` on Pi loads no context files, which makes the
+discipline layer testable rather than assumed:
+
+```bash
+python3 scripts/ab_context.py --discipline <rules>/AGENTS.md \
+  --extra <vault>/AGENTS.md --index <vault>/00-index.md \
+  --engine pi --repeat 3 --markdown AB-RESULT.md
+```
+
+- Exit 0 = a gap exists (with the file scores higher than without).
+- Exit 3 = **no gap**. Say so. Do not soften it into "mostly working".
+- Never report the result without the `-nc` column. A single-condition score
+  proves nothing about the file.
+
+If the host has no equivalent switch, run the same script: it injects the file
+itself for the `ctx` condition, so the comparison still holds.
+
 ## 2. Commands
 
 ```bash
@@ -110,6 +129,7 @@ python3 scripts/budget_check.py --config memory.config.json | --file X.md --budg
 python3 scripts/false_green.py  --vault <vault> [--top 5] [--step 0.05]
 python3 scripts/layer_dup.py    --discipline X.md --vault <vault> [--identity Y.md]
 python3 scripts/check_all.py    --config memory.config.json --vault <vault>
+python3 scripts/ab_context.py   --discipline X.md [--extra Y] [--index Z] --engine pi|claude|codex|gemini|ollama|custom [--dry-run]
 ```
 
 All scripts exit non-zero on failure. All accept `--json`.

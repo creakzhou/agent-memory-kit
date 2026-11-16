@@ -220,6 +220,49 @@ def test_pi_detection(tmp: Path) -> None:
          "CLAUDE.md" in (pi.get("extra_note") or ""), str(pi.get("extra_note")))
 
 
+def test_ab_context_contract(tmp: Path) -> None:
+    """The A/B harness must report a gap when there is one and refuse when not.
+
+    No model is involved: `stub-echo` repeats an injected context file (so the
+    answers must score) and `stub-silent` answers generically (so nothing may
+    score). If the second case ever reported a gap, the harness would be
+    measuring itself instead of the agent — the exact failure this repo is built
+    to catch elsewhere.
+    """
+    root = tmp / "ab"
+    root.mkdir()
+    vault, discipline, rc, out = scaffold(root)
+    if rc != 0:
+        case("A/B scaffold succeeds", False, out[-300:])
+        return
+
+    ctx = ["--discipline", discipline,
+           "--extra", vault / "AGENTS.md",
+           "--index", vault / "00-index.md"]
+
+    rc, out = run("ab_context.py", *ctx, "--engine", "stub-echo")
+    case("with the context file, a context-following agent scores every question",
+         rc == 0 and "GAP" in out and "6/6" in out, f"exit {rc}\n{out[-400:]}")
+
+    table = root / "table.md"
+    rc, out = run("ab_context.py", *ctx, "--engine", "stub-echo", "--markdown", table)
+    body = table.read_text(encoding="utf-8") if table.is_file() else ""
+    rows = [ln for ln in body.splitlines() if ln.startswith("| ") and "---" not in ln]
+    case("markdown output is a three-column table with one row per question",
+         rc == 0 and len(rows) == 7 and all(r.count("|") == 4 for r in rows),
+         f"rows={len(rows)}\n{body[:300]}")
+    case("the table records no fabricated result word",
+         "correct" in body and "not answered" in body, body[:300])
+
+    rc, out = run("ab_context.py", "--discipline", discipline, "--engine", "stub-silent")
+    case("without any use of the context, the harness reports NO GAP and exits 3",
+         rc == 3 and "NO GAP" in out, f"exit {rc}\n{out[-400:]}")
+
+    rc, out = run("ab_context.py", "--discipline", discipline, "--engine", "pi", "--dry-run")
+    case("dry-run prints the -nc switch instead of guessing it at runtime",
+         rc == 0 and "-nc" in out, out[-300:])
+
+
 def test_hygiene() -> None:
     """Guards against the mistake this repo already made once: shipping local paths."""
     # Split the literals so this file does not match its own scan.
@@ -274,6 +317,7 @@ def main() -> int:
         test_identity_inside_vault(tmp)
         test_false_green_contract(tmp)
         test_pi_detection(tmp)
+        test_ab_context_contract(tmp)
         test_hygiene()
 
     passed = sum(1 for _, ok, _ in RESULTS if ok)
