@@ -1,0 +1,65 @@
+name: audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: audit-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  PYTHONUTF8: "1"
+  PYTHONIOENCODING: utf-8
+
+jobs:
+  selftest:
+    name: py${{ matrix.python }} · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python: ["3.11"]
+        include:
+          - os: ubuntu-latest
+            python: "3.9"
+          - os: ubuntu-latest
+            python: "3.13"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Byte-compile every script
+        run: python -m compileall -q scripts
+
+      # The same command a contributor runs locally. It scaffolds a vault in a
+      # temp dir, audits it, injects one defect at a time, and requires the
+      # matching check to fail. A green run therefore proves the linters work.
+      - name: Self-test (clean input passes, dirty input fails)
+        run: python scripts/selftest.py
+
+      - name: Audit the shipped example vault
+        run: python scripts/check_all.py --config examples/memory.config.json --vault examples/demo-vault
+
+      - name: Probe runs on this platform
+        run: python scripts/probe.py
+
+      # Catches the failure this repo already made once: a test that drops a temp
+      # file into the working tree, or a sanitised path that crept back in.
+      - name: Tests must not write into the repository
+        shell: bash
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::a script modified the working tree"
+            git status --porcelain
+            exit 1
+          fi

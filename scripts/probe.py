@@ -95,6 +95,22 @@ PLATFORMS = [
         "skills_dir": None,
     },
     {
+        "id": "pi",
+        "label": "Pi (pi.dev)",
+        "detect_dirs": [HOME / ".pi" / "agent", HOME / ".pi"],
+        "detect_env": ["PI_CODING_AGENT_DIR"],
+        "rule_file": "AGENTS.md",
+        "global_rule": HOME / ".pi" / "agent" / "AGENTS.md",
+        "hooks": {
+            "supported": True,
+            "config": HOME / ".pi" / "agent" / "extensions",
+            "note": "TypeScript extensions: can inject context before each turn; none ship by default",
+        },
+        "mcp_configs": [HOME / ".pi" / "agent" / "mcp.json", Path(".pi") / "mcp.json"],
+        "skills_dir": HOME / ".pi" / "agent" / "skills",
+        "extra_note": "loads AGENTS.md AND CLAUDE.md (global + every parent + cwd): budgets add up",
+    },
+    {
         "id": "cursor",
         "label": "Cursor",
         "detect_dirs": [HOME / ".cursor", Path(".cursor")],
@@ -164,10 +180,24 @@ def count_mcp_servers(path: Path) -> tuple:
 
 
 def hooks_configured(path) -> bool:
-    if not path or not Path(path).is_file():
+    """True when a hook mechanism is actually wired up.
+
+    Two shapes exist in the wild: a JSON file with a "hooks" block (Claude Code),
+    and a directory of lifecycle extensions (Pi uses TypeScript modules). Missing
+    both means hook-capable on paper only.
+    """
+    if not path:
+        return False
+    p = Path(path)
+    if p.is_dir():
+        try:
+            return any(not x.name.startswith(".") for x in p.iterdir())
+        except OSError:
+            return False
+    if not p.is_file():
         return False
     try:
-        data = json.loads(Path(path).read_text(encoding="utf-8", errors="ignore"))
+        data = json.loads(p.read_text(encoding="utf-8", errors="ignore"))
     except (json.JSONDecodeError, OSError, ValueError):
         return False
     return bool(data.get("hooks"))
@@ -231,6 +261,7 @@ def detect_agent(entry: dict) -> dict:
         "mcp_total_servers": sum(m["servers"] for m in mcp_hits),
         "skills_dir": str(expand(skills_dir)) if skills_dir else None,
         "skills_count": skills_count,
+        "extra_note": entry.get("extra_note"),
     }
 
 
@@ -319,6 +350,8 @@ def render(report: dict) -> str:
                     add(f"     mcp            {m['path']} ({m['servers']} servers)")
             if a["skills_count"]:
                 add(f"     skills         {a['skills_count']} in {a['skills_dir']}")
+            if a.get("extra_note"):
+                add(f"     note           {a['extra_note']}")
     add("")
 
     if report["existing_rule_files"]:

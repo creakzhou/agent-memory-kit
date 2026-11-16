@@ -2,6 +2,8 @@
 
 **A scaffolder and linter for three-layer agent memory that survives session resets — and works across different agents.**
 
+<!-- Enable after publishing: ![audit](https://github.com/OWNER/REPO/actions/workflows/audit.yml/badge.svg) -->
+
 Most "agent memory" projects ship a database or an SDK. This one ships the boring parts that actually decide whether memory works: a folder layout, a budget, a pointer contract, and four checks that catch the ways a memory system silently lies to you.
 
 ---
@@ -58,6 +60,7 @@ Nothing is overwritten without `--force`. `--dry-run` prints the plan and writes
 | Codex CLI | `AGENTS.md` | no | yes | manual recall |
 | WorkBuddy / CodeBuddy | `MEMORY.md` | no | yes | MCP is tool-call style |
 | DSH (DeepSeek Harness) | `AGENTS.md` | yes | yes | lifecycle plugin |
+| Pi (pi.dev) | `AGENTS.md` | yes, if you write one | yes (`mcp.json`) | also loads `CLAUDE.md` — budgets add up |
 | Cursor | `.cursor/rules/memory.mdc` | no | yes | manual recall |
 | Gemini CLI | `GEMINI.md` | no | yes | manual recall |
 | Anything else | `AGENTS.md` | no | maybe | degrade to pasted memory card |
@@ -90,6 +93,30 @@ Counting returned rows is not evidence. Lower the similarity threshold far enoug
 
 Run it on `examples/demo-vault` to see the output shape.
 
+## Tests
+
+A linter that only ever prints PASS is decoration. `scripts/selftest.py` drives the
+pipeline both ways: clean input must pass, each injected defect must fail the
+matching check, and the failure must clear once the defect is removed.
+
+```bash
+python3 scripts/selftest.py      # 21 assertions, offline, no dependencies
+```
+
+| Assertion | Why it is there |
+|---|---|
+| Dangling link makes the audit exit 1 | otherwise "green" means nothing |
+| Over-budget discipline exits 1 | overflow is a failure, not a warning |
+| Rules copied into the vault exit 1 | duplication is caught, not tolerated |
+| An identity file inside the vault is not self-compared | a real false positive this repo shipped once |
+| A one-note vault is refused, not scored | `false_green` must decline to grade what it cannot separate |
+| Pi is detected from `~/.pi/agent` and its quirks are reported | platform table rows are claims; this keeps them honest |
+| No absolute home paths in tracked files | this repo leaked local paths once already |
+
+`.github/workflows/audit.yml` runs that exact command on Linux, macOS and Windows
+across Python 3.9–3.13, then audits the example vault, then fails if any script
+left a file behind in the working tree.
+
 ## Memory backends
 
 The fact layer is plain markdown, so any backend that can read files works.
@@ -108,6 +135,7 @@ The fact layer is plain markdown, so any backend that can read files works.
 Read this before believing any claim about automatic memory.
 
 - **Auto-recall requires a host lifecycle hook.** Claude Code and DSH have them. WorkBuddy, Codex, Cursor, and Gemini CLI do not — on those hosts recall is manual or tool-triggered. `probe.py` reports the truth; `scaffold.py` writes a manual-recall block instead of pretending.
+- **On Pi the hook is code you write, not a config block.** Pi has no `hooks` JSON; a TypeScript extension in `~/.pi/agent/extensions/` can inject context before each turn. Capable and honest, but it will not exist until you build it.
 - **The identity layer is host-provided.** If your agent has no cloud memory, L1 collapses into the top of L2 and you lose the "follows the account" property.
 - **Cross-agent sharing needs a third place.** A folder, a git remote, or a service. Two agents do not share memory by both having a memory feature.
 - **This tool does not write your notes.** It generates structure and audits it. The value is in the notes you actually fill in.

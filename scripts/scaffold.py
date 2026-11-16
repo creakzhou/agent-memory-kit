@@ -55,6 +55,10 @@ PLATFORM_RULES = {
     "codex":       {"file": "AGENTS.md",     "budget": 4000, "auto": "manual"},
     "workbuddy":   {"file": "MEMORY.md",     "budget": 3800, "auto": "manual"},
     "dsh":         {"file": "AGENTS.md",     "budget": 4000, "auto": "hook"},
+    # Pi has a ~1k-token system prompt, so the discipline file carries more weight;
+    # but it also concatenates AGENTS.md *and* CLAUDE.md from every parent dir, so
+    # the per-file ceiling is deliberately lower than Claude Code's.
+    "pi":          {"file": "AGENTS.md",     "budget": 3600, "auto": "hook"},
     "cursor":      {"file": ".cursor/rules/memory.mdc", "budget": 3000, "auto": "manual"},
     "gemini-cli":  {"file": "GEMINI.md",     "budget": 4000, "auto": "manual"},
     "generic":     {"file": "AGENTS.md",     "budget": 3800, "auto": "manual"},
@@ -109,6 +113,29 @@ def build_recall_section(caps: dict) -> str:
         "- you are about to say \"as we discussed earlier\"\n\n"
         "If you skip recall, say so in one line. Do not reconstruct history from vibes."
     )
+
+
+def platform_notes(platform: str, rules_dir: Path) -> list:
+    """Caveats worth printing before anyone trusts the generated layout."""
+    if platform != "pi":
+        return []
+    notes = []
+    # The file we are about to write does not count as a conflict with itself.
+    target = rules_dir / PLATFORM_RULES["pi"]["file"]
+    for name in ("CLAUDE.md", "AGENTS.md"):
+        p = rules_dir / name
+        if p.is_file() and p != target:
+            notes.append(
+                f"Pi already loads {p}. It will be injected alongside the file just "
+                f"generated, not instead of it. Merge the two, or move the older one "
+                f"into the vault."
+            )
+    if not notes:
+        notes.append(
+            "Pi loads both AGENTS.md and CLAUDE.md, from ~/.pi/agent/ and every parent "
+            "directory down to cwd. Keep exactly one discipline file on that path."
+        )
+    return notes
 
 
 def render(text: str, vars: dict) -> str:
@@ -219,6 +246,8 @@ def main() -> int:
     print(f"platform   {platform}  (discipline file: {PLATFORM_RULES[platform]['file']})")
     print(f"vault      {vault}")
     print(f"rules dir  {rules_dir}")
+    for n in platform_notes(platform, rules_dir):
+        print(f"note       {n}")
     print("")
 
     planned = 0
