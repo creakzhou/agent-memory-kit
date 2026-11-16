@@ -13,9 +13,11 @@ machine switch — then prove it works instead of assuming it.
 These four facts decide what is honest to say. Violating them produces a system the
 user will trust for a week and abandon after that.
 
-1. **Auto-recall needs a host lifecycle hook.** Claude Code and DSH have one. WorkBuddy,
-   Codex, Cursor, and Gemini CLI do not. On those hosts recall is manual or tool-call
-   triggered. Never describe it as "fully automatic".
+1. **Auto-recall needs a host lifecycle hook.** Claude Code and DSH have one. Pi has
+   the mechanism but no hook installed: it takes a TypeScript extension in
+   `~/.pi/agent/extensions/`, written before anything is recalled. WorkBuddy, Codex,
+   Cursor, and Gemini CLI have none at all. On those hosts recall is manual or
+   tool-call triggered. Never describe it as "fully automatic".
 2. **MCP is not a hook.** An MCP memory server exposes `search_memory` / `add_message`.
    Nothing reaches the context unless a tool is called. A configured MCP server proves
    a channel exists, not that recall happens.
