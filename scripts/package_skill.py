@@ -17,7 +17,7 @@ script stages an allowlist, proves the result passes the three rules, and
 *zips the staged copy only after* a self-test from that copy has passed — so a
 package that ships broken scripts cannot be built.
 
-    python3 scripts/package_skill.py                  # build dist/agent-memory-kit.zip
+    python3 scripts/package_skill.py                  # build release/workbuddy/agent-memory-kit.zip
     python3 scripts/package_skill.py --check          # validate, build nothing (CI)
     python3 scripts/package_skill.py --out /tmp/x.zip --no-selftest
 
@@ -201,7 +201,7 @@ def zip_tree(top: Path, out: Path) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--out", default="dist/agent-memory-kit.zip")
+    ap.add_argument("--out", default="release/workbuddy/agent-memory-kit.zip")
     ap.add_argument("--check", action="store_true",
                     help="validate only; build no archive")
     ap.add_argument("--no-selftest", action="store_true",

@@ -26,5 +26,6 @@ Thumbs.db
 *.local.md
 secrets*
 
-# Build output: dist/agent-memory-kit.zip is reproducible, do not commit it
-dist/
+# Build output, reproducible: release/workbuddy/ holds the packaged skill
+# (zip + unpacked copy). Rebuild with scripts/package_skill.py, never by hand.
+release/

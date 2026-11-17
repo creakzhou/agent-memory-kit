@@ -66,7 +66,7 @@
 ## 5. 打包与上传
 
 ```bash
-python3 scripts/package_skill.py          # 产出 dist/agent-memory-kit.zip
+python3 scripts/package_skill.py          # 产出 release/workbuddy/agent-memory-kit.zip
 python3 scripts/package_skill.py --check   # 只校验规则，不出包（CI 用这条）
 ```
 
@@ -75,7 +75,7 @@ python3 scripts/package_skill.py --check   # 只校验规则，不出包（CI �
 ## 6. 发布步骤（需要本人实名，我代不了这几步）
 
 1. https://open.workbuddy.cn → 【立即入驻】→ 个人认证（含人脸识别）
-2. 左侧「发布管理 → 技能」→「创建」→ 上传 `dist/agent-memory-kit.zip`（58 KB，远低于 3 MB 上限）
+2. 左侧「发布管理 → 技能」→「创建」→ 上传 `release/workbuddy/agent-memory-kit.zip`（58 KB，远低于 3 MB 上限）
 3. 填介绍（用上面第 2 节），选【免费】
 4. 提交审核（页面写 7 个工作日以内，实际常常一天内）
 5. 审核通过后列表显示「待发布」，**要再手动点一次【发布】**，状态才变成「已发布 · 公开」

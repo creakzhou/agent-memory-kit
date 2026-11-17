@@ -260,7 +260,7 @@ extra frontmatter fields. `scripts/package_skill.py` stages an allowlist, checks
 all of that, runs the packaged copy's own tests, and only then writes the zip:
 
 ```bash
-python3 scripts/package_skill.py           # dist/agent-memory-kit.zip, 58 KB
+python3 scripts/package_skill.py           # release/workbuddy/agent-memory-kit.zip
 python3 scripts/package_skill.py --check   # rules only, no archive (CI runs this)
 ```
 
