@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="agent-memory-kit: one index threading three memory layers">
+  <title>agent-memory-kit</title>
+  <defs>
+    <linearGradient id="p1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C2DACA"/><stop offset="1" stop-color="#A3C3B1"/>
+    </linearGradient>
+    <linearGradient id="p2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#88AC99"/><stop offset="1" stop-color="#729686"/>
+    </linearGradient>
+    <linearGradient id="p3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5A7969"/><stop offset="1" stop-color="#486256"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="512" height="512" rx="116" fill="#0E0F11"/>
+  <rect x="1.25" y="1.25" width="509.5" height="509.5" rx="114.75"
+        fill="none" stroke="#262A2D" stroke-width="2.5"/>
+
+  <!-- three layers, light to deep: identity / discipline / facts -->
+  <rect x="170" y="149" width="216" height="46" rx="13" fill="url(#p1)"/>
+  <rect x="170" y="233" width="216" height="46" rx="13" fill="url(#p2)"/>
+  <rect x="170" y="317" width="216" height="46" rx="13" fill="url(#p3)"/>
+
+  <!-- one index threading all three -->
+  <path d="M132 147 V365" stroke="#F59E0B" stroke-width="7"
+        stroke-linecap="round" fill="none"/>
+  <path d="M132 172 H178 M132 256 H178 M132 340 H178" stroke="#F59E0B"
+        stroke-width="7" stroke-linecap="round" fill="none"/>
+</svg>

@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  html,body{margin:0;padding:0;width:1280px;height:720px;overflow:hidden;background:#0E0F11}
+  svg{display:block}
+  .zh{font-family:"Hiragino Sans GB","PingFang SC",sans-serif}
+  .mono{font-family:Menlo,monospace}
+</style></head>
+<body>
+<svg width="1280" height="720" viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="glow" cx="0.16" cy="0.3" r="0.6">
+      <stop offset="0" stop-color="#F59E0B" stop-opacity="0.13"/>
+      <stop offset="1" stop-color="#F59E0B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="p1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#C2DACA"/><stop offset="1" stop-color="#A3C3B1"/>
+    </linearGradient>
+    <linearGradient id="p2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#88AC99"/><stop offset="1" stop-color="#729686"/>
+    </linearGradient>
+    <linearGradient id="p3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5A7969"/><stop offset="1" stop-color="#486256"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="720" fill="#0E0F11"/>
+  <rect width="1280" height="720" fill="url(#glow)"/>
+
+  <!-- icon tile: same vertical extent as the type block, 190 → 530 -->
+  <g transform="translate(92,190)">
+    <rect x="0" y="0" width="340" height="340" rx="78" fill="#131417"/>
+    <rect x="1.5" y="1.5" width="337" height="337" rx="76.5"
+          fill="none" stroke="#272B2E" stroke-width="2"/>
+    <g transform="translate(170,170) scale(0.82) translate(-259,-256)">
+      <rect x="170" y="149" width="216" height="46" rx="13" fill="url(#p1)"/>
+      <rect x="170" y="233" width="216" height="46" rx="13" fill="url(#p2)"/>
+      <rect x="170" y="317" width="216" height="46" rx="13" fill="url(#p3)"/>
+      <path d="M132 147 V365" stroke="#F59E0B" stroke-width="7"
+            stroke-linecap="round" fill="none"/>
+      <path d="M132 172 H178 M132 256 H178 M132 340 H178" stroke="#F59E0B"
+            stroke-width="7" stroke-linecap="round" fill="none"/>
+    </g>
+  </g>
+
+  <!-- type block: eyebrow top at 190, mono baseline at 525 -->
+  <text x="504" y="207" class="mono" font-size="17" letter-spacing="4.2"
+        fill="#6C7772">WORKBUDDY SKILL</text>
+
+  <text x="502" y="303" class="zh" font-size="66" font-weight="700"
+        fill="#F4F7F5" letter-spacing="1">跨 Agent 记忆系统</text>
+  <text x="502" y="381" class="zh" font-size="66" font-weight="700"
+        fill="#9FBFAE" letter-spacing="1">搭建与体检</text>
+
+  <rect x="504" y="418" width="80" height="4" rx="2" fill="#F59E0B"/>
+
+  <text x="502" y="474" class="zh" font-size="27"
+        fill="#98A49E">会话关掉 · 换个 Agent · 换台电脑，它都还在</text>
+
+  <text x="504" y="525" class="mono" font-size="17" fill="#77837D"
+  >identity / discipline / facts — plain markdown, no database</text>
+</svg>
+</body></html>

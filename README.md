@@ -271,6 +271,7 @@ Listing copy and the release checklist are in [`MARKETPLACE.md`](MARKETPLACE.md)
 - [`references/platform-matrix.md`](references/platform-matrix.md) — exact paths and capabilities per agent
 - [`references/backends.md`](references/backends.md) — filesystem / git / MCP / MemOS in detail
 - [`references/anti-patterns.md`](references/anti-patterns.md) — ten ways these systems fail
+- [`brand/`](brand) — icon and cover, SVG source plus a one-command re-render
 
 ## License
 
